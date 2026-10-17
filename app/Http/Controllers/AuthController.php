@@ -36,20 +36,34 @@ return view('auth.login');
 }
 public function authenticate(Request $request)
 {
-$credentials = $request->validate(['email' => 'required|email',
-'password' => 'required',
-]);
-if (Auth::attempt($credentials)) {
-$request->session()->regenerate();
-return redirect('/dashboard')->with('success', 'Welcome back!');
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+
+        return redirect('/dashboard')->with('success', 'Welcome back!');
+    }
+
+    return back()->withErrors([
+        'email' => 'Invalid email or password.',
+    ]);
 }
-return back()->withErrors([
-'email' => 'Invalid email or password.',
-]);
-}
+
 public function dashboard()
 {
-return view('auth.dashboard');
+    $user = Auth::user();
+
+    if (!$user) {
+        return redirect('/login');
+    }
+
+    return view('auth.dashboard', [
+        'user' => $user,
+        'role' => $user->role,
+    ]);
 }
 public function logout(Request $request)
 {
